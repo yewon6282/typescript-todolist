@@ -1,24 +1,42 @@
 const ADDTODO = "todo/ADDTODO" as const;
+const DONETODO = "todo/DONETODO" as const;
 const DELETETODO = "todo/DELETETODO" as const;
 
-export const addTodo = (id: number, contents: string) => ({ type: ADDTODO, id, contents });
+export const addTodo = (contents: string, done: boolean) => ({ type: ADDTODO, contents, done });
+export const doneTodo = (id: number, done: boolean) => ({ type: DONETODO, id, done });
 export const deleteTodo = (id: number) => ({ type: DELETETODO, id });
 
-type Action = ReturnType<typeof addTodo> | ReturnType<typeof deleteTodo>;
+type Action = ReturnType<typeof addTodo> | ReturnType<typeof doneTodo> | ReturnType<typeof deleteTodo>;
 
 type State = {
   id: number;
   contents: string;
+  done: boolean;
 };
 
-const initialState: State[] = [];
+type ListState = {
+  count: number;
+  list: State[];
+};
 
-function todoing(state: State[] = initialState, action: Action) {
+const initialState: ListState = { count: 0, list: [] };
+
+function todoing(state: ListState = initialState, action: Action) {
   switch (action.type) {
     case ADDTODO:
-      return [...state, { id: action.id, contents: action.contents }];
+      const addCount = state.count + 1;
+      return { count: addCount, list: [...state.list, { id: addCount, contents: action.contents, done: action.done }] };
+    case DONETODO:
+      const copyList = [...state.list];
+      console.log(copyList);
+      for (let i = 0; i < copyList.length; i++) {
+        if (copyList[i].id === action.id) {
+          copyList[i].done = action.done;
+        }
+      }
+      return { count: state.count, list: copyList };
     case DELETETODO:
-      return state.filter((el) => el.id !== action.id);
+      return { count: state.count, list: state.list.filter((el) => el.id !== action.id) };
     default:
       return state;
   }

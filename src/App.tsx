@@ -1,15 +1,21 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
+import TodoList from "./components/TodoList";
 import { RootState } from "./store";
-import { addTodo, deleteTodo } from "./store/todo";
+import { addTodo } from "./store/todo";
 
-function App() {
-  const todo = useSelector((state : RootState) => state.todoing)
+export type ListType = {
+  id: number;
+  contents: string;
+  done: boolean;
+};
+
+const App: React.FC = () => {
+  const todo: ListType[] = useSelector((state: RootState) => state.todoing.list);
   const dispatch = useDispatch();
 
   const [data, setData] = useState<string>();
-  const [count, setCount] = useState<number>(1);
 
   const todoValue = (e: string) => {
     setData(e);
@@ -17,25 +23,18 @@ function App() {
 
   const addTodoList = () => {
     if (data !== undefined) {
-      dispatch(addTodo(count, data))
+      dispatch(addTodo(data, false));
     }
-    setCount(count + 1);
     setData("");
   };
-
-  const deleteTodoList = (e : number) => {
-    dispatch(deleteTodo(e));
-  }
 
   return (
     <>
       <input type="text" onChange={(e) => todoValue(e.target.value)} value={data || ""} />
       <button onClick={addTodoList}>추가</button>
-      {todo.map((list) => (
-        <div key={list.id} onClick={() =>deleteTodoList(list.id)}>{list.contents}</div>
-      ))}
+      {todo.length > 0 && todo.map((list) => <TodoList key={list.id} list={list} />)}
     </>
   );
-}
+};
 
 export default App;
